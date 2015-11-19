@@ -1,6 +1,9 @@
 package com.example.niyamat.ribbit;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -41,7 +44,9 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     public static final int PICK_VIDEO_REQUEST = 3;
     public static final int MEDIA_TYPE_IMAGE = 4;
     public static final int MEDIA_TYPE_VIDEO = 5;
+    public static final int FILE_SIZE_LIMIT = 1024 * 1024 * 10;
     public static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 6;
+
     // This could be any number, we could also reuse one of the ones above.
 
     private Uri mMediaUri;
@@ -82,8 +87,15 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
 
 
                 case 2:
+                    Intent choosePhotoIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                    choosePhotoIntent.setType("image/*");
+                    startActivityForResult(choosePhotoIntent, PICK_PHOTO_REQUEST);
                     break;
                 case 3:
+                    Intent chooseVideoIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                    chooseVideoIntent.setType("video/*");
+                    Toast.makeText(MainActivity.this, R.string.video_file_size_warning, Toast.LENGTH_LONG).show();
+                    startActivityForResult(chooseVideoIntent, PICK_VIDEO_REQUEST);
                     break;
             }
         }
@@ -122,14 +134,14 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
             }
         }
 
-                            private boolean isExternalStorageAvailable() {
-                            String state = Environment.getExternalStorageState();
-                            if (state.equals(Environment.MEDIA_MOUNTED)) {
-                            return true;
-                            } else {
-                            return false;
-                            }
-                            }
+        private boolean isExternalStorageAvailable() {
+            String state = Environment.getExternalStorageState();
+            if (state.equals(Environment.MEDIA_MOUNTED)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 
     };
 
@@ -270,10 +282,38 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            //add it to the gallery
-            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            mediaScanIntent.setData(mMediaUri);
-            sendBroadcast(mediaScanIntent);
+            if (resultCode == PICK_PHOTO_REQUEST || resultCode == PICK_VIDEO_REQUEST) {
+                if (data == null) {
+                    Toast.makeText(this, getString(R.string.general_error), Toast.LENGTH_LONG).show();
+                } else {
+                    mMediaUri = data.getData();
+                }
+                if (resultCode == PICK_VIDEO_REQUEST) {
+                    //make sure the size is less than 10 MB
+                    int fileSize = 0;
+                    InputStream inputStream = null;
+                    try {
+                        inputStream = getContentResolver().openInputStream(mMediaUri);
+                        fileSize = inputStream.available();
+                    } catch (FileNotFoundException e) {
+                        Toast.makeText(this, R.string.error_opening_file, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Toast.makeText(this, R.string.error_opening_file, Toast.LENGTH_LONG).show();
+                    }
+                    finally {
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {/* Intentionally blank*/}
+                    }
+                    if (fileSize >= FILE_SIZE_LIMIT) {
+                        Toast.makeText(this, R.string.error_file_size_too_large,Toast.LENGTH_LONG).show();
+                    }
+                }
+            }else {
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                mediaScanIntent.setData(mMediaUri);
+                sendBroadcast(mediaScanIntent);
+            }
         } else if (resultCode != RESULT_CANCELED) {
             Toast.makeText(this, R.string.general_error, Toast.LENGTH_LONG).show();
         }
