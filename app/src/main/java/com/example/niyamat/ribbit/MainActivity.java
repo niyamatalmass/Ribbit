@@ -297,8 +297,10 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
                         fileSize = inputStream.available();
                     } catch (FileNotFoundException e) {
                         Toast.makeText(this, R.string.error_opening_file, Toast.LENGTH_LONG).show();
+                        return;
                     } catch (IOException e) {
                         Toast.makeText(this, R.string.error_opening_file, Toast.LENGTH_LONG).show();
+                        return;
                     }
                     finally {
                         try {
@@ -307,6 +309,7 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
                     }
                     if (fileSize >= FILE_SIZE_LIMIT) {
                         Toast.makeText(this, R.string.error_file_size_too_large,Toast.LENGTH_LONG).show();
+                        return;
                     }
                 }
             }else {
