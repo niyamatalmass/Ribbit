@@ -50,7 +50,8 @@
             android:name=".RecipientsActivity"
             android:label="@string/title_activity_recipients"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.niyamat.ribbit.MainActivity"/>
