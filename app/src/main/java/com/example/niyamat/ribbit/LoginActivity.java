@@ -1,5 +1,6 @@
 package com.example.niyamat.ribbit;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +31,12 @@ public class LoginActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
+
         ButterKnife.bind(this);
         mSignUpTextView.setOnClickListener(new View.OnClickListener() {
             @Override

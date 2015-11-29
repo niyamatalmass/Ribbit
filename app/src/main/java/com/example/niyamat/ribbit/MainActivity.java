@@ -281,62 +281,67 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (resultCode == RESULT_OK) {
             if (requestCode == PICK_PHOTO_REQUEST || requestCode == PICK_VIDEO_REQUEST) {
                 if (data == null) {
                     Toast.makeText(this, getString(R.string.general_error), Toast.LENGTH_LONG).show();
-                } else {
+                }
+                else {
                     mMediaUri = data.getData();
                 }
+
+                Log.i(TAG, "Media URI: " + mMediaUri);
                 if (requestCode == PICK_VIDEO_REQUEST) {
-                    //make sure the size is less than 10 MB
+                    // make sure the file is less than 10 MB
                     int fileSize = 0;
                     InputStream inputStream = null;
+
                     try {
                         inputStream = getContentResolver().openInputStream(mMediaUri);
-                        if (inputStream != null) {
-                            fileSize = inputStream.available();
-                        }
-                    } catch (FileNotFoundException e) {
+                        fileSize = inputStream.available();
+                    }
+                    catch (FileNotFoundException e) {
                         Toast.makeText(this, R.string.error_opening_file, Toast.LENGTH_LONG).show();
                         return;
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         Toast.makeText(this, R.string.error_opening_file, Toast.LENGTH_LONG).show();
                         return;
                     }
                     finally {
                         try {
-                            if (inputStream != null) {
-                                inputStream.close();
-                            }
-                        } catch (IOException e) {/* Intentionally blank*/}
+                            inputStream.close();
+                        } catch (IOException e) { /* Intentionally blank */ }
                     }
+
                     if (fileSize >= FILE_SIZE_LIMIT) {
-                        Toast.makeText(this, R.string.error_file_size_too_large,Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.error_file_size_too_large, Toast.LENGTH_LONG).show();
                         return;
                     }
                 }
-            }else {
+            }
+            else {
                 Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 mediaScanIntent.setData(mMediaUri);
                 sendBroadcast(mediaScanIntent);
             }
+
             Intent recipientsIntent = new Intent(this, RecipientsActivity.class);
             recipientsIntent.setData(mMediaUri);
-            ////
-            Log.d(TAG, "From MainActivity onResult Intent mMediaUri  :  " + recipientsIntent.setData(mMediaUri));
 
             String fileType;
             if (requestCode == PICK_PHOTO_REQUEST || requestCode == TAKE_PHOTO_REQUEST) {
                 fileType = ParseConstants.TYPE_IMAGE;
-            } else {
+            }
+            else {
                 fileType = ParseConstants.TYPE_VIDEO;
             }
+
             recipientsIntent.putExtra(ParseConstants.KEY_FILE_TYPE, fileType);
             startActivity(recipientsIntent);
-
-
-        } else if (resultCode != RESULT_CANCELED) {
+        }
+        else if (resultCode != RESULT_CANCELED) {
             Toast.makeText(this, R.string.general_error, Toast.LENGTH_LONG).show();
         }
     }
